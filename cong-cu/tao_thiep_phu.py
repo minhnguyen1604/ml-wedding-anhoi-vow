@@ -1,8 +1,9 @@
 """Tạo ảnh thiệp ăn hỏi bản nhà trai -> images/thiep/an-hoi.jpg (từ nguon/an-hoi.jpeg)
 
 - viết "Quý khách" (phông chữ ký Photograph Signature, cùng kiểu mặt lời mời 1.jpg) lên dòng chấm, căn phải;
-- sửa cho khách nhà trai: TƯ GIA NHÀ TRAI + địa chỉ nhà trai, giờ chính 17H30 (tiệc thân mật ở nhà trai),
-  "tại nhà gái" / "tại nhà trai" dưới hàng biểu tượng, dòng "Đoàn nhà trai khởi hành lúc 12H00…".
+- cho khách nhà trai: giữ mặt thiệp như bản in, đổi hàng biểu tượng thành timeline 4 mốc (12H00 tập trung tại
+  nhà trai · 13H00 lễ ăn hỏi tại nhà gái · 15H00 đón dâu · 17H30 tiệc thân mật tại nhà trai) và thêm một dòng
+  địa chỉ nhà trai. (Bản đổi hẳn "TƯ GIA NHÀ TRAI" trên mặt thiệp vẫn còn trong script: DOI_NOI_TIEC.)
 (Bản có vows: các mốc lễ vows gộp vào tờ chương trình, xem cong-cu/tao_chuong_trinh_doc.py nếu có.)
 
 Phông cần trên máy (không đưa lên GitHub): phong-chu/PhotographSignature.otf, phong-chu/noto-serif-display/;
@@ -146,24 +147,28 @@ def viet(chu, f, x, day, mau=MAU_XANH, neo="rs"):
     ImageDraw.Draw(lop_moi[mau]).text((x * K, day * K), chu, font=f, fill=255, anchor=neo)
 
 
-# a) dòng vàng: TƯ GIA NHÀ GÁI -> TƯ GIA NHÀ TRAI (chữ I cao 81 điểm ảnh, chân chữ ở hàng 1516)
-an_hoi = xoa_chu(an_hoi, (790, 1400, 1645, 1530), 235)
-f_vang = phong(NOTO, 100, dam=250)
-cao_I = -f_vang.getbbox("I", anchor="ls")[1] / K
-f_vang = phong(NOTO, 100 * 81 / cao_I, dam=250)
-viet("TƯ GIA NHÀ TRAI", f_vang, LE_PHAI, 1516.5, MAU_VANG)
+# Đổi nơi tiệc thành TƯ GIA NHÀ TRAI (địa chỉ, giờ chính 17H30) ngay trên mặt thiệp. Đã chọn giữ mặt thiệp
+# như bản in gốc, chỉ thêm timeline và địa chỉ nhà trai bên dưới, nên tắt (để lại nếu cần dùng sau).
+DOI_NOI_TIEC = False
+if DOI_NOI_TIEC:
+    # a) dòng vàng: TƯ GIA NHÀ GÁI -> TƯ GIA NHÀ TRAI (chữ I cao 81 điểm ảnh, chân chữ ở hàng 1516)
+    an_hoi = xoa_chu(an_hoi, (790, 1400, 1645, 1530), 235)
+    f_vang = phong(NOTO, 100, dam=250)
+    cao_I = -f_vang.getbbox("I", anchor="ls")[1] / K
+    f_vang = phong(NOTO, 100 * 81 / cao_I, dam=250)
+    viet("TƯ GIA NHÀ TRAI", f_vang, LE_PHAI, 1516.5, MAU_VANG)
 
-# b) địa chỉ: hai dòng, cùng cỡ và cùng hàng chân chữ với địa chỉ nhà gái
-co_dc, day_2 = khop("MANDARIN GARDEN, HOÀNG MINH GIÁM, HÀ NỘI", TIMES, (491, 1631, 1627, 1680))
-_, day_1 = khop("P2705, TẦNG 27, TOÀ B3, CỔNG 3 CHUNG CƯ", TIMES, (646, 1558, 1627, 1613))
-an_hoi = xoa_chu(an_hoi, (430, 1545, 1645, 1695), 205, chu_xanh=True)
-viet("P2601, TOÀ NHÀ LICOGI 13,", phong(TIMES, co_dc), LE_PHAI, day_1)
-viet("164 KHUẤT DUY TIẾN, THANH XUÂN, HÀ NỘI", phong(TIMES, co_dc), LE_PHAI, day_2)
+    # b) địa chỉ: hai dòng, cùng cỡ và cùng hàng chân chữ với địa chỉ nhà gái
+    co_dc, day_2 = khop("MANDARIN GARDEN, HOÀNG MINH GIÁM, HÀ NỘI", TIMES, (491, 1631, 1627, 1680))
+    _, day_1 = khop("P2705, TẦNG 27, TOÀ B3, CỔNG 3 CHUNG CƯ", TIMES, (646, 1558, 1627, 1613))
+    an_hoi = xoa_chu(an_hoi, (430, 1545, 1645, 1695), 205, chu_xanh=True)
+    viet("P2601, TOÀ NHÀ LICOGI 13,", phong(TIMES, co_dc), LE_PHAI, day_1)
+    viet("164 KHUẤT DUY TIẾN, THANH XUÂN, HÀ NỘI", phong(TIMES, co_dc), LE_PHAI, day_2)
 
-# c) giờ chính: 13H00 -> 17H30 (giờ tiệc thân mật ở nhà trai)
-co_ngay, day_ngay = khop("13H00 | CHỦ NHẬT | 27.12.2026", TIMES_DAM, (587, 1777, 1628, 1856))
-an_hoi = xoa_chu(an_hoi, (560, 1765, 1645, 1868), 205)
-viet("17H30 | CHỦ NHẬT | 27.12.2026", phong(TIMES_DAM, co_ngay), LE_PHAI + 1, day_ngay)
+    # c) giờ chính: 13H00 -> 17H30 (giờ tiệc thân mật ở nhà trai)
+    co_ngay, day_ngay = khop("13H00 | CHỦ NHẬT | 27.12.2026", TIMES_DAM, (587, 1777, 1628, 1856))
+    an_hoi = xoa_chu(an_hoi, (560, 1765, 1645, 1868), 205)
+    viet("17H30 | CHỦ NHẬT | 27.12.2026", phong(TIMES_DAM, co_ngay), LE_PHAI + 1, day_ngay)
 
 # d) hàng biểu tượng -> timeline 4 mốc: 12H00 tập trung tại nhà trai · 13H00 lễ ăn hỏi tại nhà gái · 15H00 đón dâu
 #    · 17H30 tiệc thân mật. Biểu tượng tráp / xe hoa / bát đĩa cắt từ thiệp; mốc 12H00 vẽ thêm ngôi nhà cùng nét.
@@ -201,9 +206,9 @@ def ve_nha(rong=150):
 
 
 TAM = [596, 882, 1168, 1454]                 # tâm 4 cột, cột cuối giữ đúng chỗ cũ (lề phải chữ TIỆC THÂN MẬT)
-DAY_BT, Y_KE = 2165, 2198                    # chân các biểu tượng, hàng đường kẻ
+DAY_BT, Y_KE = 2145, 2178                    # chân các biểu tượng, hàng đường kẻ
 MOC = [("12H00", "TẬP TRUNG", "tại nhà trai", None), ("13H00", "LỄ ĂN HỎI", "tại nhà gái", "trap"),
-       ("15H00", "ĐÓN DÂU", "", "xe"), ("17H30", "TIỆC THÂN MẬT", "", "dia")]
+       ("15H00", "ĐÓN DÂU", "", "xe"), ("17H30", "TIỆC THÂN MẬT", "tại nhà trai", "dia")]
 nha = ve_nha()
 for x, (gio, ten, noi, k_bt) in zip(TAM, MOC):
     if k_bt:
@@ -219,6 +224,15 @@ ve = ImageDraw.Draw(lop_moi[MAU_XANH])
 ve.line([((TAM[0] - 140) * K, Y_KE * K), (LE_PHAI * K, Y_KE * K)], fill=170, width=round(1.6 * K))
 for x in TAM:
     ve.ellipse([(x - 6) * K, (Y_KE - 6) * K, (x + 6) * K, (Y_KE + 6) * K], fill=255)
+
+# e) địa chỉ nhà trai: một dòng nghiêng dưới timeline; dời "Rất hân hạnh được đón tiếp!" xuống cho có chỗ
+VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 62
+dong = an_hoi.crop(VUNG_CAM_ON)
+an_hoi.paste(Image.new("RGB", dong.size, nen_trang), VUNG_CAM_ON[:2])
+an_hoi.paste(dong, (VUNG_CAM_ON[0], VUNG_CAM_ON[1] + XUONG))
+f_dc = phong(TIMES_NGHIENG, co_gio * .92)
+viet("Tư gia nhà trai: P2601, Toà nhà Licogi 13,", f_dc, LE_PHAI, 2384)
+viet("164 Khuất Duy Tiến, Thanh Xuân, Hà Nội", f_dc, LE_PHAI, 2424)
 
 for mau, lop_m in lop_moi.items():
     an_hoi = Image.composite(Image.new("RGB", an_hoi.size, mau), an_hoi, lop_m.resize(an_hoi.size, Image.LANCZOS))
