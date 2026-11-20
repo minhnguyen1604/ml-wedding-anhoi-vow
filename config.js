@@ -51,7 +51,7 @@ window.THIEP = {
       nhan: "Địa chỉ",
       tieuDe: "Tư gia nhà trai",
       diaChi: ["P2601, Toà nhà Licogi 13", "164 Khuất Duy Tiến, Thanh Xuân, Hà Nội"],
-      ghiChu: "Quý khách tập trung tại đây lúc 12H00 để cùng đoàn nhà trai sang nhà gái làm lễ ăn hỏi, sau đó trở về dự tiệc thân mật lúc 17H30.",
+      ghiChu: "",   // dòng chữ nghiêng dưới địa chỉ (để "" thì không hiện)
     },
   ],
 
