@@ -83,5 +83,25 @@ if DAY_LEN:
     an_hoi.paste(dong, (VUNG[0], VUNG[1] - DAY_LEN))
 print("Đẩy dòng TRÂN TRỌNG KÍNH MỜI lên", DAY_LEN, "điểm ảnh")
 an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_CHU), an_hoi, lop)
+
+# Dòng hẹn đoàn nhà trai: thiệp in sẵn ghi "Tư gia nhà gái", khách nhà trai cần tập trung ở nhà trai trước.
+# Dời dòng "Rất hân hạnh được đón tiếp!" xuống sát đáy, viết hai dòng nhỏ vào khoảng trống phía trên nó,
+# cùng phông Times New Roman, cùng màu và căn phải như chữ trên thiệp.
+HEN = ("Kính hẹn Quý khách 12H00 tập trung tại tư gia nhà trai để cùng sang nhà gái",
+       "P2601, TOÀ NHÀ LICOGI 13, 164 KHUẤT DUY TIẾN, THANH XUÂN, HÀ NỘI")
+MAU_THIEP = (66, 74, 54)                     # xanh rêu của chữ trên thiệp ăn hỏi
+LE_PHAI = 1627                               # lề phải của khối chữ
+VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 60   # dòng "Rất hân hạnh được đón tiếp!" và số điểm ảnh dời xuống
+dong = an_hoi.crop(VUNG_CAM_ON)
+nen = tuple(int(v) for v in np.median(np.asarray(dong).reshape(-1, 3), axis=0))
+an_hoi.paste(Image.new("RGB", dong.size, nen), VUNG_CAM_ON[:2])
+an_hoi.paste(dong, (VUNG_CAM_ON[0], VUNG_CAM_ON[1] + XUONG))
+lop_hen = Image.new("L", (an_hoi.width * K, an_hoi.height * K), 0)
+ve = ImageDraw.Draw(lop_hen)
+ve.text((LE_PHAI * K, 2374 * K), HEN[0], font=ImageFont.truetype("C:/Windows/Fonts/timesi.ttf", 38 * K), fill=255, anchor="rs")
+ve.text((LE_PHAI * K, 2420 * K), HEN[1], font=ImageFont.truetype("C:/Windows/Fonts/times.ttf", 33 * K), fill=255, anchor="rs")
+lop_hen = lop_hen.resize(an_hoi.size, Image.LANCZOS)
+an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_THIEP), an_hoi, lop_hen)
+
 thu_nho(an_hoi).save(ra / "an-hoi.jpg", quality=90, optimize=True)
 print("Đã ghi images/thiep/an-hoi.jpg")
