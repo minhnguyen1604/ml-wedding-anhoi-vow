@@ -33,11 +33,12 @@ window.THIEP = {
   //    Chép ảnh vào thư mục images/thiep/ rồi ghi tên file ở đây.
   //    Ảnh nào chưa có thì trang tự hiện khung trống.
   thiep: [
-    "images/thiep/1.jpg",   // lời mời (mặt sau thiệp giấy)
-    "images/thiep/2.jpg",   // chương trình tiệc cưới (mặt trước thiệp giấy, đã bỏ mã QR và lề trống)
+    // Xếp theo thứ tự thời gian: ăn hỏi 27.12.2026 → (lễ vows 15h00) → tiệc cưới 17h30 ngày 02.01.2027
     "images/thiep/an-hoi.jpg",  // thiệp lễ ăn hỏi (tạo bằng cong-cu/tao_thiep_phu.py, có viết "Quý khách")
     "images/thiep/vows-1.jpg",  // thiệp lễ vows: Vow ceremony (tách từ nguon/vows.jpeg)
     "images/thiep/vows-2.jpg",  // thiệp lễ vows: Timeline
+    "images/thiep/1.jpg",   // lời mời (mặt sau thiệp giấy)
+    "images/thiep/2.jpg",   // chương trình tiệc cưới (mặt trước thiệp giấy, đã bỏ mã QR và lề trống)
   ],
 
   // 2) ĐỊA ĐIỂM
