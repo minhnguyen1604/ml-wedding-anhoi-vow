@@ -2,8 +2,7 @@
 
 - nguon/an-hoi.jpeg -> images/thiep/an-hoi.jpg: viết "Quý khách" (phông chữ ký Photograph Signature,
   cùng kiểu với mặt lời mời 1.jpg) lên dòng chấm dưới "TRÂN TRỌNG KÍNH MỜI".
-- nguon/vows.jpeg (nếu có) -> images/thiep/vows-1.jpg (Vow ceremony) và images/thiep/vows-2.jpg (Timeline):
-  ảnh gốc là hai mặt nằm cạnh nhau, tách ra hai ảnh để trên điện thoại chữ đủ to.
+(Các mốc lễ vows trong nguon/vows.jpeg đã gộp vào tờ chương trình: xem cong-cu/tao_chuong_trinh_doc.py)
 
 Chạy:  python cong-cu/tao_thiep_phu.py
 Ảnh nào tạo ra thì nhớ khai báo trong mục `thiep` của config.js.
@@ -86,17 +85,3 @@ print("Đẩy dòng TRÂN TRỌNG KÍNH MỜI lên", DAY_LEN, "điểm ảnh")
 an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_CHU), an_hoi, lop)
 thu_nho(an_hoi).save(ra / "an-hoi.jpg", quality=90, optimize=True)
 print("Đã ghi images/thiep/an-hoi.jpg")
-
-# 2. Thiệp lễ vows (nếu có): hai mặt cạnh nhau, giữa là khe trắng
-duong_vows = GOC / "nguon" / "vows.jpeg"
-if duong_vows.exists():
-    v = Image.open(duong_vows).convert("RGB")
-    a = np.asarray(v).astype(int)
-    giua = a.shape[1] // 2
-    trang = np.flatnonzero(a[:, giua - 60:giua + 60].min(axis=2).mean(axis=0) >= 251) + giua - 60
-    if len(trang) == 0:
-        sys.exit("Không thấy khe trắng giữa hai mặt thiệp vows.")
-    for ten, khung in (("vows-1.jpg", (0, 0, trang.min(), v.height)),
-                       ("vows-2.jpg", (trang.max() + 1, 0, v.width, v.height))):
-        thu_nho(v.crop(khung)).save(ra / ten, quality=90, optimize=True)
-        print("Đã ghi images/thiep/" + ten, khung)
