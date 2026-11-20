@@ -103,7 +103,7 @@
     $("xn-han").textContent = xn.hanChot || "";
 
     var form = $("xn-form"), nutGui = $("xn-gui"), hopLoi = $("xn-loi");
-    var KHOA = "ml-xac-nhan";   // riêng cho thiệp nhà trai; thiệp nhà gái (lm-wedding) dùng "lm-xac-nhan"
+    var KHOA = "ml-anhoi-vow-xac-nhan";   // riêng cho link ml-wedding-anhoi-vow; ml-wedding dùng "ml-xac-nhan", lm-wedding dùng "lm-xac-nhan"
     var soNguoi = 1;
 
     var chon = function (ten) {

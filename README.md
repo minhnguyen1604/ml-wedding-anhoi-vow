@@ -1,7 +1,15 @@
-# L&M Wedding Ceremony Invitation — thiệp nhà trai
+# L&M Wedding Ceremony Invitation — thiệp nhà trai, kèm thiệp ăn hỏi và thiệp lễ vows
 
-Thiệp cưới online của Tuấn Minh & Tú Linh, **bản dành cho khách nhà trai**, chạy trên GitHub Pages:
-**https://minhnguyen1604.github.io/ml-wedding/**
+Thiệp cưới online của Tuấn Minh & Tú Linh, **bản dành cho khách nhà trai, có thêm thiệp ăn hỏi và thiệp lễ vows**, chạy trên GitHub Pages:
+**https://minhnguyen1604.github.io/ml-wedding-anhoi-vow/**
+
+> Bản này giống hệt thiệp nhà trai (repo `ml-wedding`), chỉ thêm ảnh vào mục khung thiệp (`thiep` trong `config.js`):
+> - `images/thiep/an-hoi.jpg` — thiệp lễ ăn hỏi, tạo từ `nguon/an-hoi.jpeg` bằng `python cong-cu/tao_thiep_phu.py`
+>   (viết "Quý khách" bằng phông chữ ký lên dòng chấm).
+> - `images/thiep/vows-1.jpg`, `vows-2.jpg` — thiệp lễ vows (Vow ceremony, Timeline), cùng script tách từ `nguon/vows.jpeg`.
+> Bộ nhớ "đã xác nhận" trên máy khách dùng khoá riêng `ml-anhoi-vow-xac-nhan`. Xác nhận tham dự vẫn ghi chung vào Google Sheet.
+> Các thiệp nhà trai: `ml-wedding` (thiệp cưới), `ml-wedding-anhoi` (+ ăn hỏi), `ml-wedding-anhoi-vow` (+ ăn hỏi + vows).
+> Sửa chung (album, hiệu ứng…) thì nhớ sửa ở tất cả các repo.
 
 > Có hai thiệp, hai repository riêng, cùng ghi xác nhận tham dự vào một Google Sheet:
 > - **Nhà gái** — https://minhnguyen1604.github.io/lm-wedding/ (repo `lm-wedding`, link này nằm trong mã QR in trên thiệp giấy):

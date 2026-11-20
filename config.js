@@ -35,6 +35,9 @@ window.THIEP = {
   thiep: [
     "images/thiep/1.jpg",   // lời mời (mặt sau thiệp giấy)
     "images/thiep/2.jpg",   // chương trình tiệc cưới (mặt trước thiệp giấy, đã bỏ mã QR và lề trống)
+    "images/thiep/an-hoi.jpg",  // thiệp lễ ăn hỏi (tạo bằng cong-cu/tao_thiep_phu.py, có viết "Quý khách")
+    "images/thiep/vows-1.jpg",  // thiệp lễ vows: Vow ceremony (tách từ nguon/vows.jpeg)
+    "images/thiep/vows-2.jpg",  // thiệp lễ vows: Timeline
   ],
 
   // 2) ĐỊA ĐIỂM
