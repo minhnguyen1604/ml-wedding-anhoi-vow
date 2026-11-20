@@ -13,6 +13,7 @@ window.THIEP = {
   moThiep: {
     bat: true,
     ten: "Save the date",   // dòng chữ dưới logo trên màn mở thiệp
+    ngayTruoc: "27 . 12 . 2026",   // ngày lễ ăn hỏi, hiện trên dòng ngày cưới (để "" thì không hiện)
     ngay: "02 . 01 . 2027",
     // Ảnh đôi lego (nền trong suốt).
     //  - doi: một ảnh chung cho cả đôi (đang dùng, tách từ tranh nguon/lego-moi-goc.jpg)

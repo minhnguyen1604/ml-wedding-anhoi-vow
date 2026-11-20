@@ -871,6 +871,12 @@
     $("bia-logo").hidden = !C.logo;
     $("bia-ten").textContent = mt.ten || "";
     $("bia-ngay").textContent = mt.ngay || "";
+    if (mt.ngayTruoc) {   // ngày lễ ăn hỏi, đặt phía trên ngày cưới, cùng kiểu chữ
+      var ngayTruoc = document.createElement("p");
+      ngayTruoc.className = "bia-ngay";
+      ngayTruoc.textContent = mt.ngayTruoc;
+      $("bia-ngay").parentNode.insertBefore(ngayTruoc, $("bia-ngay"));
+    }
     // Có ảnh lego thật thì dùng ảnh; không thì dùng hình vẽ
     var datDoi = function (o, h) {
       h = h || {};

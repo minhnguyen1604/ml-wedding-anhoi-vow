@@ -165,21 +165,60 @@ co_ngay, day_ngay = khop("13H00 | CHỦ NHẬT | 27.12.2026", TIMES_DAM, (587, 1
 an_hoi = xoa_chu(an_hoi, (560, 1765, 1645, 1868), 205)
 viet("17H30 | CHỦ NHẬT | 27.12.2026", phong(TIMES_DAM, co_ngay), LE_PHAI + 1, day_ngay)
 
-# d) dời "Rất hân hạnh được đón tiếp!" xuống sát đáy để có chỗ cho hai dòng mới
-VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 62
-dong = an_hoi.crop(VUNG_CAM_ON)
-nen = tuple(int(v) for v in np.median(np.asarray(dong).reshape(-1, 3), axis=0))
-an_hoi.paste(Image.new("RGB", dong.size, nen), VUNG_CAM_ON[:2])
-an_hoi.paste(dong, (VUNG_CAM_ON[0], VUNG_CAM_ON[1] + XUONG))
-
-# e) "tại nhà gái" dưới LỄ ĂN HỎI 13H00, "tại nhà trai" dưới TIỆC THÂN MẬT 17H30 (tâm cột đo trên ảnh)
+# d) hàng biểu tượng -> timeline 4 mốc: 12H00 tập trung tại nhà trai · 13H00 lễ ăn hỏi tại nhà gái · 15H00 đón dâu
+#    · 17H30 tiệc thân mật. Biểu tượng tráp / xe hoa / bát đĩa cắt từ thiệp; mốc 12H00 vẽ thêm ngôi nhà cùng nét.
+#    Biểu tượng nằm trên một đường kẻ ngang có chấm tròn, dưới là giờ, tên mốc và nơi (như tờ chương trình tiệc cưới).
+nen_trang = tuple(int(v) for v in np.median(np.asarray(an_hoi.crop((1100, 2300, 1640, 2380))).reshape(-1, 3), axis=0))
+BT_GOC = {"trap": (596, 1990, 773, 2147), "xe": (923, 2045, 1158, 2142), "dia": (1364, 2029, 1531, 2158)}
+bt = {k: an_hoi.crop(v) for k, v in BT_GOC.items()}
+co_nhan, _ = khop("LỄ ĂN HỎI", TIMES_NGHIENG, (571, 2177, 797, 2229))
 co_gio, _ = khop("13H00", TIMES, (624, 2257, 747, 2290))
-f_noi = phong(TIMES_NGHIENG, co_gio * .92)
-viet("tại nhà gái", f_noi, 685, 2338, neo="ms")
-viet("tại nhà trai", f_noi, 1454, 2338, neo="ms")
+an_hoi.paste(Image.new("RGB", (1645 - 430, 2310 - 1985), nen_trang), (430, 1985))   # vùng này chỉ có chữ trên nền trắng
 
-# f) dòng nghiêng: đoàn nhà trai khởi hành 12H00
-viet("Đoàn nhà trai khởi hành lúc 12H00 từ tư gia nhà trai sang nhà gái", phong(TIMES_NGHIENG, 38), LE_PHAI, 2410)
+
+def ve_nha(rong=150):
+    """Ngôi nhà nét mảnh màu xanh rêu, cùng độ dày nét với các biểu tượng trên thiệp."""
+    k, s = 4, rong / 150
+    w, h = round(rong * k) + 8, round(132 * s * k) + 8
+    l = Image.new("L", (w, h), 0)
+    d = ImageDraw.Draw(l)
+    nk = round(2.4 * k)
+    def P(*ds):
+        return [((x * s + 75 * s) * k + 4, (y * s + 66 * s) * k + 4) for x, y in ds]
+    d.line(P((-70, -2), (0, -62), (70, -2)), fill=255, width=nk, joint="curve")            # mái
+    d.line(P((34, -33), (34, -54), (48, -54), (48, -21)), fill=255, width=nk, joint="curve")  # ống khói
+    d.line(P((-54, -14), (-54, 64), (54, 64), (54, -14)), fill=255, width=nk, joint="curve")  # tường
+    d.line(P((-16, 64), (-16, 30)), fill=255, width=nk)                                       # cửa vòm
+    d.line(P((16, 64), (16, 30)), fill=255, width=nk)
+    x0, y0 = P((-16, 14))[0]; x1, y1 = P((16, 46))[0]
+    d.arc([x0, y0, x1, y1], 180, 360, fill=255, width=nk)
+    for cx in (-36, 36):                                                                      # hai ô cửa sổ
+        d.rectangle(P((cx - 9, 10), (cx + 9, 28)), outline=255, width=nk)
+    tim = [(0, -22), (-9, -31), (-9, -38), (-4, -42), (0, -38), (4, -42), (9, -38), (9, -31), (0, -22)]
+    d.line(P(*tim), fill=255, width=round(2 * k), joint="curve")                              # trái tim trên đầu hồi
+    l = l.resize((w // k, h // k), Image.LANCZOS)
+    return l
+
+
+TAM = [596, 882, 1168, 1454]                 # tâm 4 cột, cột cuối giữ đúng chỗ cũ (lề phải chữ TIỆC THÂN MẬT)
+DAY_BT, Y_KE = 2165, 2198                    # chân các biểu tượng, hàng đường kẻ
+MOC = [("12H00", "TẬP TRUNG", "tại nhà trai", None), ("13H00", "LỄ ĂN HỎI", "tại nhà gái", "trap"),
+       ("15H00", "ĐÓN DÂU", "", "xe"), ("17H30", "TIỆC THÂN MẬT", "", "dia")]
+nha = ve_nha()
+for x, (gio, ten, noi, k_bt) in zip(TAM, MOC):
+    if k_bt:
+        im = bt[k_bt]
+        an_hoi.paste(im, (round(x - im.width / 2), DAY_BT - im.height + 4))
+    else:
+        an_hoi.paste(Image.new("RGB", nha.size, MAU_XANH), (round(x - nha.width / 2), DAY_BT - nha.height + 4), nha)
+    viet(gio, phong(TIMES, co_gio), x, Y_KE + 58, neo="ms")
+    viet(ten, phong(TIMES_NGHIENG, co_nhan * .86), x, Y_KE + 108, neo="ms")
+    if noi:
+        viet(noi, phong(TIMES_NGHIENG, co_gio * .92), x, Y_KE + 150, neo="ms")
+ve = ImageDraw.Draw(lop_moi[MAU_XANH])
+ve.line([((TAM[0] - 140) * K, Y_KE * K), (LE_PHAI * K, Y_KE * K)], fill=170, width=round(1.6 * K))
+for x in TAM:
+    ve.ellipse([(x - 6) * K, (Y_KE - 6) * K, (x + 6) * K, (Y_KE + 6) * K], fill=255)
 
 for mau, lop_m in lop_moi.items():
     an_hoi = Image.composite(Image.new("RGB", an_hoi.size, mau), an_hoi, lop_m.resize(an_hoi.size, Image.LANCZOS))
