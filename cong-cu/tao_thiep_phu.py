@@ -64,10 +64,25 @@ if not PHONG_CHU_KY.exists():
 an_hoi = Image.open(GOC / "nguon" / "an-hoi.jpeg").convert("RGB")
 K = 3
 f = ImageFont.truetype(str(PHONG_CHU_KY), CO_CHU * K)
-dai = f.getlength("Quy khách") / K
-x = (DONG_CHAM[0] + DONG_CHAM[1]) / 2 - dai / 2                 # đặt giữa dòng chấm
-lop = lop_quy_khach(f, an_hoi.width * K, an_hoi.height * K, int(x * K), DAY * K)
+# Căn phải: mép phải nét chữ thẳng với đầu cuối dòng chấm (cũng là lề phải của khối chữ trên thiệp)
+thu = np.asarray(lop_quy_khach(f, an_hoi.width * K, an_hoi.height * K, 0, DAY * K))
+mep_phai = np.flatnonzero(thu.max(axis=0) > 40).max()
+x = DONG_CHAM[1] * K - mep_phai
+lop = lop_quy_khach(f, an_hoi.width * K, an_hoi.height * K, int(x), DAY * K)
 lop = lop.resize(an_hoi.size, Image.LANCZOS)
+
+# Căn phải thì chữ Q nằm ngay dưới chữ "TRỌNG": đẩy dòng "TRÂN TRỌNG KÍNH MỜI" lên cho chữ không chạm dấu nặng
+# (phía trên còn rộng, cách chữ "Lễ Ăn Hỏi" khoảng 90 điểm ảnh)
+day_tran = 979                               # hàng thấp nhất của dòng TRÂN TRỌNG KÍNH MỜI (dấu nặng)
+dinh_chu = np.flatnonzero(np.asarray(lop).max(axis=1) > 40).min()
+DAY_LEN = max(0, day_tran + 16 - dinh_chu)   # chừa khe 16 điểm ảnh
+if DAY_LEN:
+    VUNG = (1000, 915, 1650, day_tran + 4)    # vùng dòng TRÂN TRỌNG KÍNH MỜI, nền trắng
+    dong = an_hoi.crop(VUNG)
+    nen = tuple(int(v) for v in np.median(np.asarray(dong).reshape(-1, 3), axis=0))
+    an_hoi.paste(Image.new("RGB", dong.size, nen), VUNG[:2])
+    an_hoi.paste(dong, (VUNG[0], VUNG[1] - DAY_LEN))
+print("Đẩy dòng TRÂN TRỌNG KÍNH MỜI lên", DAY_LEN, "điểm ảnh")
 an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_CHU), an_hoi, lop)
 thu_nho(an_hoi).save(ra / "an-hoi.jpg", quality=90, optimize=True)
 print("Đã ghi images/thiep/an-hoi.jpg")
