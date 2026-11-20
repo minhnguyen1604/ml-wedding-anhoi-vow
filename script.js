@@ -45,6 +45,46 @@
     return d;
   }
 
+  /* ---------- Pop up địa chỉ (mở khi chạm ô bấm trên ảnh thiệp) ---------- */
+  var popDc = null, popNutMo = null;
+  function dongPopDiaChi() {
+    popDc.hidden = true;
+    document.body.classList.remove("khoa-cuon");
+    if (popNutMo) popNutMo.focus({ preventScroll: true });
+  }
+  function moPopDiaChi(o, nut) {
+    if (!popDc) {
+      popDc = document.createElement("div");
+      popDc.className = "pop-dc";
+      popDc.hidden = true;
+      popDc.setAttribute("role", "dialog");
+      popDc.setAttribute("aria-modal", "true");
+      popDc.innerHTML = '<div class="pop-the"><button type="button" class="pop-dong" aria-label="Đóng">&times;</button>' +
+        '<p class="chu-nho pop-nhan"></p><p class="pop-ten"></p><div class="pop-dia-chi"></div><p class="pop-ghi-chu"></p></div>';
+      document.body.appendChild(popDc);
+      popDc.addEventListener("click", function (e) { if (e.target === popDc) dongPopDiaChi(); });
+      popDc.querySelector(".pop-dong").addEventListener("click", dongPopDiaChi);
+      document.addEventListener("keydown", function (e) { if (!popDc.hidden && e.key === "Escape") dongPopDiaChi(); });
+    }
+    popDc.setAttribute("aria-label", o.tieuDe || "");
+    popDc.querySelector(".pop-nhan").textContent = o.nhan || "";
+    popDc.querySelector(".pop-ten").textContent = o.tieuDe || "";
+    var dc = popDc.querySelector(".pop-dia-chi");
+    dc.textContent = "";
+    (o.diaChi || []).forEach(function (dong) {
+      var p = document.createElement("p");
+      p.textContent = dong;
+      dc.appendChild(p);
+    });
+    popDc.querySelector(".pop-ghi-chu").textContent = o.ghiChu || "";
+    popNutMo = nut;
+    popDc.hidden = false;
+    document.body.classList.add("khoa-cuon");
+    popDc.querySelector(".pop-dong").focus();
+    // khách đã chạm rồi thì các ô bấm thôi nhấp nháy
+    document.querySelectorAll(".o-bam").forEach(function (b) { b.classList.add("da-bam"); });
+  }
+
   /* ---------- 1. Khung thiệp ---------- */
   var dsKhung = $("ds-khung");
   (C.thiep || []).forEach(function (src, i) {
@@ -60,8 +100,32 @@
     var img = new Image();
     img.alt = "Thiệp cưới – trang " + (i + 1);
     var lanThu = 0;
+    var oBam = (C.oBamThiep || []).filter(function (o) { return o.anh === src; });
     img.onload = function () {
-      khung.replaceChild(img, trong);
+      var hien = img;
+      if (oBam.length) {   // ảnh có ô bấm (chữ "TẠI NHÀ TRAI"): bọc ảnh lại để đặt ô bấm lên đúng chỗ
+        hien = document.createElement("div");
+        hien.className = "anh-boc";
+        hien.appendChild(img);
+        oBam.forEach(function (o) {
+          o.vung.forEach(function (v) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "o-bam";
+            b.setAttribute("aria-label", (o.tieuDe || "") + " – xem địa chỉ");
+            b.style.left = v[0] + "%";
+            b.style.top = v[1] + "%";
+            b.style.width = v[2] + "%";
+            b.style.height = v[3] + "%";
+            b.addEventListener("click", function (e) {
+              e.stopPropagation();
+              moPopDiaChi(o, b);
+            });
+            hien.appendChild(b);
+          });
+        });
+      }
+      khung.replaceChild(hien, trong);
       img.addEventListener("click", function () {
         var ds = Array.prototype.map.call(dsKhung.querySelectorAll("img"), function (x) { return x.src; });
         moAnh(ds, ds.indexOf(img.src));

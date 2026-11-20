@@ -2,8 +2,8 @@
 
 - viết "Quý khách" (phông chữ ký Photograph Signature, cùng kiểu mặt lời mời 1.jpg) lên dòng chấm, căn phải;
 - cho khách nhà trai: giữ mặt thiệp như bản in, đổi hàng biểu tượng thành timeline 4 mốc (12H00 tập trung tại
-  nhà trai · 13H00 lễ ăn hỏi tại nhà gái · 15H00 đón dâu · 17H30 tiệc thân mật tại nhà trai) và thêm một dòng
-  địa chỉ nhà trai. (Bản đổi hẳn "TƯ GIA NHÀ TRAI" trên mặt thiệp vẫn còn trong script: DOI_NOI_TIEC.)
+  nhà trai · 13H00 lễ ăn hỏi tại nhà gái · 15H00 đón dâu · 17H30 tiệc thân mật tại nhà trai). Chữ "TẠI NHÀ TRAI"
+  trên trang web có ô bấm mở pop up địa chỉ nhà trai (vị trí ô in ra cuối script, chép vào config.js). (Bản đổi hẳn "TƯ GIA NHÀ TRAI" trên mặt thiệp vẫn còn trong script: DOI_NOI_TIEC.)
 (Bản có vows: các mốc lễ vows gộp vào tờ chương trình, xem cong-cu/tao_chuong_trinh_doc.py nếu có.)
 
 Phông cần trên máy (không đưa lên GitHub): phong-chu/PhotographSignature.otf, phong-chu/noto-serif-display/;
@@ -206,9 +206,10 @@ def ve_nha(rong=150):
 
 
 TAM = [596, 882, 1168, 1454]                 # tâm 4 cột, cột cuối giữ đúng chỗ cũ (lề phải chữ TIỆC THÂN MẬT)
-DAY_BT, Y_KE = 2145, 2178                    # chân các biểu tượng, hàng đường kẻ
-MOC = [("12H00", "TẬP TRUNG", "tại nhà trai", None), ("13H00", "LỄ ĂN HỎI", "tại nhà gái", "trap"),
-       ("15H00", "ĐÓN DÂU", "", "xe"), ("17H30", "TIỆC THÂN MẬT", "tại nhà trai", "dia")]
+DAY_BT, Y_KE = 2160, 2193                    # chân các biểu tượng, hàng đường kẻ
+MOC = [("12H00", "TẬP TRUNG", "TẠI NHÀ TRAI", None), ("13H00", "LỄ ĂN HỎI", "TẠI NHÀ GÁI", "trap"),
+       ("15H00", "ĐÓN DÂU", "", "xe"), ("17H30", "TIỆC THÂN MẬT", "TẠI NHÀ TRAI", "dia")]
+O_BAM = []                                   # vùng chữ "TẠI NHÀ TRAI" (tỉ lệ % trên ảnh) để trang web đặt ô bấm mở địa chỉ
 nha = ve_nha()
 for x, (gio, ten, noi, k_bt) in zip(TAM, MOC):
     if k_bt:
@@ -219,23 +220,21 @@ for x, (gio, ten, noi, k_bt) in zip(TAM, MOC):
     viet(gio, phong(TIMES, co_gio), x, Y_KE + 58, neo="ms")
     viet(ten, phong(TIMES_NGHIENG, co_nhan * .86), x, Y_KE + 108, neo="ms")
     if noi:
-        viet(noi, phong(TIMES_NGHIENG, co_gio * .92), x, Y_KE + 150, neo="ms")
+        f_noi = phong(TIMES_NGHIENG, co_gio * .8)
+        viet(noi, f_noi, x, Y_KE + 150, neo="ms")
+        if noi == "TẠI NHÀ TRAI":
+            l, t, r, b = f_noi.getbbox(noi, anchor="ms")
+            x0, y0, x1, y1 = x + l / K - 22, Y_KE + 150 + t / K - 16, x + r / K + 22, Y_KE + 150 + b / K + 14
+            W, H = an_hoi.size
+            O_BAM.append([round(100 * x0 / W, 2), round(100 * y0 / H, 2), round(100 * (x1 - x0) / W, 2), round(100 * (y1 - y0) / H, 2)])
 ve = ImageDraw.Draw(lop_moi[MAU_XANH])
 ve.line([((TAM[0] - 140) * K, Y_KE * K), (LE_PHAI * K, Y_KE * K)], fill=170, width=round(1.6 * K))
 for x in TAM:
     ve.ellipse([(x - 6) * K, (Y_KE - 6) * K, (x + 6) * K, (Y_KE + 6) * K], fill=255)
-
-# e) địa chỉ nhà trai: một dòng nghiêng dưới timeline; dời "Rất hân hạnh được đón tiếp!" xuống cho có chỗ
-VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 62
-dong = an_hoi.crop(VUNG_CAM_ON)
-an_hoi.paste(Image.new("RGB", dong.size, nen_trang), VUNG_CAM_ON[:2])
-an_hoi.paste(dong, (VUNG_CAM_ON[0], VUNG_CAM_ON[1] + XUONG))
-f_dc = phong(TIMES_NGHIENG, co_gio * .92)
-viet("Tư gia nhà trai: P2601, Toà nhà Licogi 13,", f_dc, LE_PHAI, 2384)
-viet("164 Khuất Duy Tiến, Thanh Xuân, Hà Nội", f_dc, LE_PHAI, 2424)
 
 for mau, lop_m in lop_moi.items():
     an_hoi = Image.composite(Image.new("RGB", an_hoi.size, mau), an_hoi, lop_m.resize(an_hoi.size, Image.LANCZOS))
 
 thu_nho(an_hoi).save(ra / "an-hoi.jpg", quality=90, optimize=True)
 print("Đã ghi images/thiep/an-hoi.jpg")
+print("Ô bấm TẠI NHÀ TRAI (trái %, trên %, rộng %, cao %) cho config.js:", O_BAM)

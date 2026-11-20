@@ -161,6 +161,88 @@ body {
   padding: 0 24px;
 }
 
+/* Ô bấm trên ảnh thiệp (chữ "TẠI NHÀ TRAI"): viền vàng, toả sáng nhịp nhàng để khách chú ý và chạm vào */
+.anh-boc { position: relative; }
+.o-bam {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  background: rgba(201, 162, 75, .14);
+  border: 1.5px solid rgba(201, 162, 75, .9);
+  border-radius: 999px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: o-bam-sang 1.6s ease-out infinite;
+}
+.o-bam::before {            /* nới rộng vùng chạm cho dễ bấm trên điện thoại */
+  content: "";
+  position: absolute;
+  inset: -12px -8px;
+}
+.o-bam.da-bam {
+  animation: none;
+  background: transparent;
+  border-color: rgba(201, 162, 75, .5);
+}
+.o-bam:focus-visible { outline: 2px solid var(--vang-dam); outline-offset: 3px; }
+@keyframes o-bam-sang {
+  0%   { box-shadow: 0 0 0 0 rgba(201, 162, 75, .65); background-color: rgba(201, 162, 75, .24); }
+  70%  { box-shadow: 0 0 0 11px rgba(201, 162, 75, 0); background-color: rgba(201, 162, 75, .08); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 162, 75, 0); background-color: rgba(201, 162, 75, .14); }
+}
+@media (prefers-reduced-motion: reduce) { .o-bam { animation: none; } }
+
+/* Pop up địa chỉ */
+.pop-dc {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(38, 42, 26, .55);
+}
+.pop-dc[hidden] { display: none; }
+.pop-the {
+  position: relative;
+  width: min(100%, 360px);
+  padding: 30px 22px 24px;
+  text-align: center;
+  color: var(--reu-dam);
+  background: var(--kem);
+  border: 1px solid var(--reu-nhat);
+  box-shadow: 0 18px 40px rgba(38, 42, 26, .3);
+  animation: pop-vao .28s ease-out;
+}
+@keyframes pop-vao { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .pop-the { animation: none; } }
+.pop-dong {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 42px;
+  height: 42px;
+  padding: 0 0 4px;
+  border: 0;
+  background: none;
+  font: 400 32px/1 "Cormorant Garamond", serif;
+  color: var(--reu);
+  cursor: pointer;
+}
+.pop-nhan { color: var(--vang-dam); }
+.pop-ten { margin: 10px 0 6px; font-size: 27px; font-weight: 600; line-height: 1.2; }
+.pop-dia-chi p { margin: 0; font-size: 19px; line-height: 1.4; }
+.pop-ghi-chu {
+  margin: 16px auto 0;
+  max-width: 26em;
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--reu);
+  text-wrap: balance;
+}
+.pop-ghi-chu:empty { display: none; }
+
 /* ---------- 2. Địa điểm ---------- */
 .the {
   padding: 24px 16px 22px;
