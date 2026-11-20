@@ -1,11 +1,13 @@
-"""Tạo ảnh các thiệp phụ (thiệp ăn hỏi, thiệp lễ vows) cho thiệp nhà trai và ghi vào images/thiep/.
+"""Tạo ảnh thiệp ăn hỏi bản nhà trai -> images/thiep/an-hoi.jpg (từ nguon/an-hoi.jpeg)
 
-- nguon/an-hoi.jpeg -> images/thiep/an-hoi.jpg: viết "Quý khách" (phông chữ ký Photograph Signature,
-  cùng kiểu với mặt lời mời 1.jpg) lên dòng chấm dưới "TRÂN TRỌNG KÍNH MỜI".
-(Các mốc lễ vows trong nguon/vows.jpeg đã gộp vào tờ chương trình: xem cong-cu/tao_chuong_trinh_doc.py)
+- viết "Quý khách" (phông chữ ký Photograph Signature, cùng kiểu mặt lời mời 1.jpg) lên dòng chấm, căn phải;
+- sửa cho khách nhà trai: TƯ GIA NHÀ TRAI + địa chỉ nhà trai, giờ chính 17H30 (tiệc thân mật ở nhà trai),
+  "tại nhà gái" / "tại nhà trai" dưới hàng biểu tượng, dòng "Đoàn nhà trai khởi hành lúc 12H00…".
+(Bản có vows: các mốc lễ vows gộp vào tờ chương trình, xem cong-cu/tao_chuong_trinh_doc.py nếu có.)
 
+Phông cần trên máy (không đưa lên GitHub): phong-chu/PhotographSignature.otf, phong-chu/noto-serif-display/;
+Times New Roman có sẵn trong Windows.
 Chạy:  python cong-cu/tao_thiep_phu.py
-Ảnh nào tạo ra thì nhớ khai báo trong mục `thiep` của config.js.
 """
 import sys
 from pathlib import Path
@@ -84,24 +86,103 @@ if DAY_LEN:
 print("Đẩy dòng TRÂN TRỌNG KÍNH MỜI lên", DAY_LEN, "điểm ảnh")
 an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_CHU), an_hoi, lop)
 
-# Dòng hẹn đoàn nhà trai: thiệp in sẵn ghi "Tư gia nhà gái", khách nhà trai cần tập trung ở nhà trai trước.
-# Dời dòng "Rất hân hạnh được đón tiếp!" xuống sát đáy, viết hai dòng nhỏ vào khoảng trống phía trên nó,
-# cùng phông Times New Roman, cùng màu và căn phải như chữ trên thiệp.
-HEN = ("Kính hẹn Quý khách 12H00 tập trung tại tư gia nhà trai để cùng sang nhà gái",
-       "P2601, TOÀ NHÀ LICOGI 13, 164 KHUẤT DUY TIẾN, THANH XUÂN, HÀ NỘI")
-MAU_THIEP = (66, 74, 54)                     # xanh rêu của chữ trên thiệp ăn hỏi
+# ----- Bản cho khách nhà trai -----
+# Thiệp in sẵn mời tiệc thân mật "tại TƯ GIA NHÀ GÁI". Với khách nhà trai: tập trung ở nhà trai 12H00, cùng đoàn
+# sang nhà gái làm lễ ăn hỏi 13H00, đón dâu 15H00 rồi về nhà trai dự tiệc thân mật 17H30. Nên sửa thành:
+#   TƯ GIA NHÀ TRAI + địa chỉ nhà trai, giờ chính 17H30 (giờ tiệc), thêm "tại nhà gái" / "tại nhà trai" dưới
+#   hàng biểu tượng, và một dòng nghiêng: đoàn nhà trai khởi hành 12H00 từ tư gia nhà trai sang nhà gái.
+# Chữ xanh viết lại bằng Times New Roman (đúng phông của thiệp); chữ vàng là phông thương mại không có chữ R,
+# nên viết lại cả dòng bằng Noto Serif Display (Google Fonts, OFL) trong phong-chu/noto-serif-display/.
+import cv2
+
+TIMES, TIMES_DAM, TIMES_NGHIENG = (f"C:/Windows/Fonts/{t}.ttf" for t in ("times", "timesbd", "timesi"))
+NOTO = GOC / "phong-chu" / "noto-serif-display" / "NotoSerifDisplay.ttf"
+if not NOTO.exists():
+    sys.exit(f"Thiếu phông {NOTO} (tải NotoSerifDisplay[wdth,wght].ttf từ github.com/google/fonts, ofl/notoserifdisplay).")
+MAU_XANH = (66, 74, 54)                      # xanh rêu của chữ trên thiệp ăn hỏi
+MAU_VANG = (168, 131, 62)                    # vàng của chữ "TƯ GIA NHÀ GÁI"
 LE_PHAI = 1627                               # lề phải của khối chữ
-VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 60   # dòng "Rất hân hạnh được đón tiếp!" và số điểm ảnh dời xuống
+
+
+def phong(duong, co, dam=None):
+    f = ImageFont.truetype(str(duong), round(co * K))
+    if dam:
+        f.set_variation_by_axes([dam, 100])
+    return f
+
+
+def xoa_chu(anh, khung, nguong, chu_xanh=False):
+    """Xoá chữ trong khung rồi vá lại từ nền xung quanh.
+    chu_xanh: chỉ lấy điểm có sắc xanh (lục >= đỏ) để không đụng vào nét hoa rum màu be (đỏ > lục) nằm dưới chữ."""
+    a = np.asarray(anh).copy()
+    x0, y0, x1, y1 = khung
+    vung = np.ascontiguousarray(a[y0:y1, x0:x1, ::-1]).astype(np.uint8)
+    v = vung.astype(int)
+    sang = v.mean(axis=2)
+    if chu_xanh:
+        mat_na = (sang < 150) | ((v[:, :, 1] >= v[:, :, 2]) & (sang < 246))
+        mat_na = cv2.dilate(mat_na.astype(np.uint8) * 255, np.ones((3, 3), np.uint8))
+        a[y0:y1, x0:x1] = cv2.inpaint(vung, mat_na, 3, cv2.INPAINT_TELEA)[:, :, ::-1]
+    else:
+        mat_na = cv2.dilate((sang < nguong).astype(np.uint8) * 255, np.ones((7, 7), np.uint8))
+        a[y0:y1, x0:x1] = cv2.inpaint(vung, mat_na, 6, cv2.INPAINT_TELEA)[:, :, ::-1]
+    return Image.fromarray(a)
+
+
+def khop(chu, duong, khung):
+    """Cỡ chữ và hàng chân chữ để dòng chữ gốc viết lại bằng phông này trùng đúng khối chữ trên ảnh (khung = mép nét)."""
+    x0, y0, x1, y1 = khung
+    l, t, r, b = ImageFont.truetype(str(duong), 200).getbbox(chu, anchor="ls")
+    co = 200 * (x1 - x0 + 1) / (r - l)
+    l, t, r, b = ImageFont.truetype(str(duong), round(co * K)).getbbox(chu, anchor="ls")
+    return co, y1 + 1 - b / K
+
+
+lop_moi = {MAU_XANH: Image.new("L", (an_hoi.width * K, an_hoi.height * K), 0),
+           MAU_VANG: Image.new("L", (an_hoi.width * K, an_hoi.height * K), 0)}
+
+
+def viet(chu, f, x, day, mau=MAU_XANH, neo="rs"):
+    ImageDraw.Draw(lop_moi[mau]).text((x * K, day * K), chu, font=f, fill=255, anchor=neo)
+
+
+# a) dòng vàng: TƯ GIA NHÀ GÁI -> TƯ GIA NHÀ TRAI (chữ I cao 81 điểm ảnh, chân chữ ở hàng 1516)
+an_hoi = xoa_chu(an_hoi, (790, 1400, 1645, 1530), 235)
+f_vang = phong(NOTO, 100, dam=250)
+cao_I = -f_vang.getbbox("I", anchor="ls")[1] / K
+f_vang = phong(NOTO, 100 * 81 / cao_I, dam=250)
+viet("TƯ GIA NHÀ TRAI", f_vang, LE_PHAI, 1516.5, MAU_VANG)
+
+# b) địa chỉ: hai dòng, cùng cỡ và cùng hàng chân chữ với địa chỉ nhà gái
+co_dc, day_2 = khop("MANDARIN GARDEN, HOÀNG MINH GIÁM, HÀ NỘI", TIMES, (491, 1631, 1627, 1680))
+_, day_1 = khop("P2705, TẦNG 27, TOÀ B3, CỔNG 3 CHUNG CƯ", TIMES, (646, 1558, 1627, 1613))
+an_hoi = xoa_chu(an_hoi, (430, 1545, 1645, 1695), 205, chu_xanh=True)
+viet("P2601, TOÀ NHÀ LICOGI 13,", phong(TIMES, co_dc), LE_PHAI, day_1)
+viet("164 KHUẤT DUY TIẾN, THANH XUÂN, HÀ NỘI", phong(TIMES, co_dc), LE_PHAI, day_2)
+
+# c) giờ chính: 13H00 -> 17H30 (giờ tiệc thân mật ở nhà trai)
+co_ngay, day_ngay = khop("13H00 | CHỦ NHẬT | 27.12.2026", TIMES_DAM, (587, 1777, 1628, 1856))
+an_hoi = xoa_chu(an_hoi, (560, 1765, 1645, 1868), 205)
+viet("17H30 | CHỦ NHẬT | 27.12.2026", phong(TIMES_DAM, co_ngay), LE_PHAI + 1, day_ngay)
+
+# d) dời "Rất hân hạnh được đón tiếp!" xuống sát đáy để có chỗ cho hai dòng mới
+VUNG_CAM_ON, XUONG = (900, 2385, 1660, 2475), 62
 dong = an_hoi.crop(VUNG_CAM_ON)
 nen = tuple(int(v) for v in np.median(np.asarray(dong).reshape(-1, 3), axis=0))
 an_hoi.paste(Image.new("RGB", dong.size, nen), VUNG_CAM_ON[:2])
 an_hoi.paste(dong, (VUNG_CAM_ON[0], VUNG_CAM_ON[1] + XUONG))
-lop_hen = Image.new("L", (an_hoi.width * K, an_hoi.height * K), 0)
-ve = ImageDraw.Draw(lop_hen)
-ve.text((LE_PHAI * K, 2374 * K), HEN[0], font=ImageFont.truetype("C:/Windows/Fonts/timesi.ttf", 38 * K), fill=255, anchor="rs")
-ve.text((LE_PHAI * K, 2420 * K), HEN[1], font=ImageFont.truetype("C:/Windows/Fonts/times.ttf", 33 * K), fill=255, anchor="rs")
-lop_hen = lop_hen.resize(an_hoi.size, Image.LANCZOS)
-an_hoi = Image.composite(Image.new("RGB", an_hoi.size, MAU_THIEP), an_hoi, lop_hen)
+
+# e) "tại nhà gái" dưới LỄ ĂN HỎI 13H00, "tại nhà trai" dưới TIỆC THÂN MẬT 17H30 (tâm cột đo trên ảnh)
+co_gio, _ = khop("13H00", TIMES, (624, 2257, 747, 2290))
+f_noi = phong(TIMES_NGHIENG, co_gio * .92)
+viet("tại nhà gái", f_noi, 685, 2338, neo="ms")
+viet("tại nhà trai", f_noi, 1454, 2338, neo="ms")
+
+# f) dòng nghiêng: đoàn nhà trai khởi hành 12H00
+viet("Đoàn nhà trai khởi hành lúc 12H00 từ tư gia nhà trai sang nhà gái", phong(TIMES_NGHIENG, 38), LE_PHAI, 2410)
+
+for mau, lop_m in lop_moi.items():
+    an_hoi = Image.composite(Image.new("RGB", an_hoi.size, mau), an_hoi, lop_m.resize(an_hoi.size, Image.LANCZOS))
 
 thu_nho(an_hoi).save(ra / "an-hoi.jpg", quality=90, optimize=True)
 print("Đã ghi images/thiep/an-hoi.jpg")
